@@ -46,7 +46,7 @@ contract StableLPOracleTest is BaseVaultTest, StablePoolContractsDeployer {
 
     function setUp() public virtual override {
         for (uint256 i = 0; i < MAX_TOKENS; i++) {
-            tokens.push(createERC20(string(abi.encodePacked("TK", i)), 18 - uint8(2 * i)));
+            tokens.push(createERC20(string(abi.encodePacked("TK", i)), 18));
         }
 
         sortedTokens = InputHelpers.sortTokens(tokens);
@@ -386,7 +386,7 @@ contract StableLPOracleTest is BaseVaultTest, StablePoolContractsDeployer {
         }
 
         vm.prank(alice);
-        uint256 amountIn = router.swapSingleTokenExactOut(address(pool), IERC20(sortedTokens[0]), IERC20(sortedTokens[1]), poolInitAmounts[1] * 8999 / 9000, MAX_UINT128, MAX_UINT256, false, "");
+        uint256 amountIn = router.swapSingleTokenExactOut(address(pool), IERC20(sortedTokens[0]), IERC20(sortedTokens[1]), poolInitAmounts[1] - 1e14, MAX_UINT128, MAX_UINT256, false, "");
 
         uint256 D = _getInvariant(amplificationParameter * StableMath.AMP_PRECISION, address(pool));
         console.log('Invariant after swap: \t%e', D);
