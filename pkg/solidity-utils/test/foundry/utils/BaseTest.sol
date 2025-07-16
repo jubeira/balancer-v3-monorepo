@@ -17,7 +17,7 @@ import { WETHTestToken } from "../../../contracts/test/WETHTestToken.sol";
 abstract contract BaseTest is Test {
     using CastingHelpers for *;
 
-    uint256 internal constant DEFAULT_BALANCE = 1e9 * 1e18;
+    uint256 internal constant DEFAULT_BALANCE = 1e15 * 1e18;
 
     // Reasonable block.timestamp `MAY_1_2023`
     uint32 internal constant START_TIMESTAMP = 1_682_899_200;
