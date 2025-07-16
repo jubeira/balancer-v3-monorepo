@@ -103,7 +103,7 @@ contract StableLPOracleTest is BaseVaultTest, StablePoolContractsDeployer {
             vault.buildTokenConfig(_tokens.asIERC20()),
             amplificationParameter,
             roleAccounts,
-            DEFAULT_SWAP_FEE_PERCENTAGE,
+            0.01e16, // 0.01% swap fee
             address(0),
             true,
             false,
@@ -362,8 +362,9 @@ contract StableLPOracleTest is BaseVaultTest, StablePoolContractsDeployer {
         int256[] memory pricesInt = new int256[](totalTokens);
         IStablePool pool;
         StableLPOracleMock oracle;
+
+        uint256[] memory poolInitAmounts = new uint256[](totalTokens);
         {
-            uint256[] memory poolInitAmounts = new uint256[](totalTokens);
             address[] memory _tokens = new address[](totalTokens);
 
             for (uint256 i = 0; i < totalTokens; i++) {
@@ -382,10 +383,10 @@ contract StableLPOracleTest is BaseVaultTest, StablePoolContractsDeployer {
 
             uint256 D = _getInvariant(amplificationParameter * StableMath.AMP_PRECISION, address(pool));
             console.log('Initial invariant: \t%e', D);
-
-            vm.prank(alice);
-            router.swapSingleTokenExactOut(address(pool), IERC20(_tokens[0]), IERC20(_tokens[1]), poolInitAmounts[1] * 8999 / 9000, MAX_UINT128, MAX_UINT256, false, "");
         }
+
+        vm.prank(alice);
+        uint256 amountIn = router.swapSingleTokenExactOut(address(pool), IERC20(sortedTokens[0]), IERC20(sortedTokens[1]), poolInitAmounts[1] * 8999 / 9000, MAX_UINT128, MAX_UINT256, false, "");
 
         uint256 D = _getInvariant(amplificationParameter * StableMath.AMP_PRECISION, address(pool));
         console.log('Invariant after swap: \t%e', D);
@@ -394,6 +395,12 @@ contract StableLPOracleTest is BaseVaultTest, StablePoolContractsDeployer {
         console.log('Market balances[0]: %e', marketPriceBalancesScaled18[0]);
         console.log('Market balances[1]: %e', marketPriceBalancesScaled18[1]);
         _checkPricesAndInvariant(amplificationParameter, marketPriceBalancesScaled18, D, totalTokens, pricesInt);
+
+        vm.prank(alice);
+        router.swapSingleTokenExactOut(address(pool), IERC20(sortedTokens[1]), IERC20(sortedTokens[0]), amountIn, MAX_UINT128, MAX_UINT256, false, "");
+
+        D = _getInvariant(amplificationParameter * StableMath.AMP_PRECISION, address(pool));
+        console.log('Invariant after reverting the swap: \t%e', D);
     }
 
     function testLatestRoundData__Fuzz(
